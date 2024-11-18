@@ -1,17 +1,13 @@
 import numpy as np
 from collections import Counter
-from treenode import TreeNode
+from decision_trees.treenode import TreeNode
 
 class DecisionTree():
 
-    def __init__(self, max_depth=4, min_samples_leaf=1, 
-                 min_information_gain=0.0, numb_of_features_splitting=None,
-                 amount_of_say=None) -> None:
+    def __init__(self, max_depth=4, min_samples_leaf=1, min_information_gain=0.0) -> None:
         self.max_depth = max_depth
         self.min_samples_leaf = min_samples_leaf
         self.min_information_gain = min_information_gain
-        self.numb_of_features_splitting = numb_of_features_splitting
-        self.amount_of_say = amount_of_say
 
     def _entropy(self, class_probabilities: list) -> float:
         return sum([-p * np.log2(p) for p in class_probabilities if p>0])
@@ -36,6 +32,22 @@ class DecisionTree():
 
         return group1, group2
 
+    def _find_label_probs(self, data: np.array) -> np.array:
+
+        labels_as_integers = data[:,-1].astype(int)
+        # Calculate the total number of labels
+        total_labels = len(labels_as_integers)
+        # Calculate the ratios (probabilities) for each label
+        label_probabilities = np.zeros(len(self.labels_in_train), dtype=float)
+
+        # Populate the label_probabilities array based on the specific labels
+        for i, label in enumerate(self.labels_in_train):
+            label_index = np.where(labels_as_integers == i)[0]
+            if len(label_index) > 0:
+                label_probabilities[i] = len(label_index) / total_labels
+
+        return label_probabilities
+
     def find_best_split(self, data: np.array) -> tuple:
         """
         Finds the best split (with the lowest entropy) given data
@@ -47,8 +59,8 @@ class DecisionTree():
 
         for idx in range(data.shape[1]-1):
             feature_val = np.median(data[:, idx])
-            g1, g2 = self.split(data, idx, feature_val)
-            part_entropy = self.partition_entropy([g1[:, -1], g2[:, -1]])
+            g1, g2 = self._split(data, idx, feature_val)
+            part_entropy = self._partition_entropy([g1[:, -1], g2[:, -1]])
             if part_entropy < min_part_entropy:
                 min_part_entropy = part_entropy
                 min_entropy_feature_idx = idx
@@ -67,10 +79,10 @@ class DecisionTree():
         split_1_data, split_2_data, split_feature_idx, split_feature_val, split_entropy = self.find_best_split(data)
         
         # Find label probs for the node
-        label_probabilities = self.find_label_probs(data)
+        label_probabilities = self._find_label_probs(data)
 
         # Calculate information gain
-        node_entropy = self.entropy(label_probabilities)
+        node_entropy = self._entropy(label_probabilities)
         information_gain = node_entropy - split_entropy
         
         # Create node
@@ -88,12 +100,6 @@ class DecisionTree():
         node.right = self.create_tree(split_2_data, current_depth)
         
         return node
-    
-    def __init__(self, max_depth=4, min_samples_leaf=1, min_information_gain=0.0) -> None:
-        self.max_depth = max_depth
-        self.min_samples_leaf = min_samples_leaf
-        self.min_information_gain = min_information_gain
-
     
     def train(self, X_train: np.array, Y_train: np.array) -> None:
         
