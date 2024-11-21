@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from decision_trees.decision_tree import DecisionTree
 
-iris = datasets.load_iris()
+iris = datasets.load_breast_cancer()
 
 X = np.array(iris.data)
 Y = np.array(iris.target)
@@ -19,7 +19,7 @@ print("Train Shape:", X_test.shape)
 my_tree = DecisionTree(max_depth=4, min_samples_leaf=1, min_information_gain=0)
 my_tree.train(X_train, Y_train)
 
-#my_tree.print_tree()
+my_tree.print_tree()
 
 train_preds = my_tree.predict(X_set=X_train)
 print("TRAIN PERFORMANCE")
@@ -33,3 +33,10 @@ print("Test size", len(Y_test))
 print("True preds", sum(test_preds == Y_test))
 print("Accuracy", sum(test_preds == Y_test) / len(Y_test))
 
+# plt.bar(range(len(my_tree.feature_importances)), 
+#         list(my_tree.feature_importances.values()), tick_label=iris_feature_names)
+# plt.title("Feature Importance")
+# plt.xlabel("Feature")
+# plt.xticks(rotation=90)
+# plt.ylabel("Feature Importance")
+# plt.show()

@@ -140,3 +140,11 @@ class DecisionTree():
         
         return preds
     
+    def _print_recursive(self, node: TreeNode, level=0) -> None:
+        if node != None:
+            self._print_recursive(node.left, level + 1)
+            print('    ' * 4 * level + '-> ' + node.node_def())
+            self._print_recursive(node.right, level + 1)
+
+    def print_tree(self) -> None:
+        self._print_recursive(node=self.tree)
